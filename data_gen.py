@@ -55,6 +55,10 @@ class AgeGenDataset(Dataset):
         img = align_face(full_path, landmarks)
         img = transforms.ToPILImage()(img)
         # print('img.size: ' + str(img.size))
+        # 如果图像是灰度图（单通道），转换为RGB图
+        if img.mode != 'RGB':
+            img = img.convert("RGB")
+            # print('img.size: ' + str(img.size))
         img = self.transformer(img)
         # print('img.size(): ' + str(img.size()))
         # loc = sample['face_location']

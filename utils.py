@@ -145,7 +145,7 @@ def mean_absolute_error(scores, targets):
 
 
 def align_face(img_fn, facial5points):
-    raw = cv.imread(img_fn, True)
+    raw = cv.imread(img_fn, cv.IMREAD_GRAYSCALE)
     facial5points = np.reshape(facial5points, (2, 5))
 
     crop_size = (image_h, image_w)

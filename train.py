@@ -114,6 +114,9 @@ def train(train_loader, model, criterion_info, optimizer, epoch):
 
     # Batches
     for i, (inputs, age_true, gen_true) in enumerate(train_loader):
+        temp=len(train_loader.dataset.samples)
+        jindu=i*100/temp
+        print(f'时间：{datetime.now().strftime("%Y-%m-%d %H:%M:%S")}    总量：{temp}    当前：{i}    进度：{jindu}%')
         chunk_size = inputs.size()[0]
         # Move to GPU, if available
         inputs = inputs.to(device)
