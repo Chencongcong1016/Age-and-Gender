@@ -25,7 +25,7 @@ def reformat_date(mat_date):
 
 
 def create_path(path):
-    return os.path.join(IMG_DIR, path[0])
+    return os.path.join(IMG_DIR, path[0]).replace('\\','/')
 
 
 def get_face_attributes(full_path):
@@ -71,7 +71,7 @@ if __name__ == "__main__":
             'celeb_names',
             'celeb_id'
             ]
-    imdb_dict = dict(zip(keys, np.asarray(data)))
+    imdb_dict = dict(zip(keys, np.asarray(data, dtype=object)))
     imdb_dict['dob'] = [reformat_date(dob) for dob in imdb_dict['dob']]
     imdb_dict['full_path'] = [create_path(path) for path in imdb_dict['full_path']]
 
