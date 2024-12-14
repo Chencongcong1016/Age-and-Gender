@@ -1,5 +1,5 @@
 # 同时识别年龄与性别
-基于PyTorch 实现多任务学习，在同时识别年龄与性别。aa
+基于PyTorch 实现多任务学习，在同时识别年龄与性别。
 
 
 ## 数据集
@@ -15,6 +15,11 @@
 460723张照片为平衡每个年龄最多只保存5000张，清洗后得到163065张，按年龄分布作图：
 
 ![image](https://github.com/foamliu/Joint-Estimation-of-Age-and-Gender/raw/master/images/age.png)
+
+## 安装
+安装：pip install scipy
+
+卸载：pip uninstall scipy
 
 ## 用法
 
