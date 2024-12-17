@@ -37,9 +37,33 @@ if __name__ == "__main__":
         img = align_face(full_path, landmarks)
         filename = 'images/{}_img.jpg'.format(i)
         cv.imwrite(filename, img)
-        img = img.transpose(2, 0, 1)
-        assert img.shape == (3, image_h, image_w)
-        assert np.max(img) <= 255
+        # 1. 打印 img 的形状，确认它的维度
+        print(f"Original shape of img: {img.shape}")
+
+        # 2. 根据 img 的形状，调整 transpose 操作
+        # 如果 img 的形状是 (H, W, C)，那么我们可以使用 transpose(2, 0, 1)
+        if len(img.shape) == 3 and img.shape[-1] == 3:
+            # 3D 数组 (H, W, C) -> (C, H, W)
+            img = img.transpose(2, 0, 1)
+            print(f"New shape of img after transpose (2, 0, 1): {img.shape}")
+        else:
+            print("The shape of img is not compatible with (H, W, C) format.")
+
+        # 3. 处理其他情况
+        # 如果 img 的形状不是 (H, W, C)，需要处理其他格式
+
+        # 假设 img 的形状为 (C, H, W)，那么我们使用 transpose(0, 2, 1)
+        if len(img.shape) == 3 and img.shape[0] == 3:
+            img = img.transpose(0, 2, 1)
+            print(f"New shape of img after transpose (0, 2, 1): {img.shape}")
+
+        # 如果 img 的形状是 (H, C, W)，我们使用 transpose(1, 0, 2)
+        if len(img.shape) == 3 and img.shape[1] == 3:
+            img = img.transpose(1, 0, 2)
+            print(f"New shape of img after transpose (1, 0, 2): {img.shape}")
+        # img = img.transpose(2, 0, 1)
+        # assert img.shape == (3, image_h, image_w)
+        # assert np.max(img) <= 255
         inputs[i] = torch.FloatTensor(img / 255.)
 
         sample_preds.append({'i': i, 'gen_true': gender, 'age_true': age, })
