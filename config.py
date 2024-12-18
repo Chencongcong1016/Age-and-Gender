@@ -6,25 +6,25 @@ channel = 3
 epochs = 10000
 patience = 10
 
-# Model parameters
+# 模型参数
 dropout = 0.5
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')  # sets device for model and PyTorch tensors
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')  # 设置模型和PyTorch张量的设备
 train_split = 0.9
 age_num_classes = 101
 gen_num_classes = 2
 
-# Training parameters
+# 训练参数
 start_epoch = 0
-epochs = 120  # number of epochs to train for (if early stopping is not triggered)
-epochs_since_improvement = 0  # keeps track of number of epochs since there's been an improvement in validation BLEU
+epochs = 120  # 训练的周期数（如果未触发提前停止）
+epochs_since_improvement = 0  # 跟踪epoch的数量，因为在验证BLEU中有了改进
 batch_size = 32
-workers = 1  # for data-loading; right now, only 1 works with h5py
-lr = 1e-4  # learning rate
-grad_clip = 5.  # clip gradients at an absolute value of
-print_freq = 100  # print training/validation stats every __ batches
-checkpoint = None  # path to checkpoint, None if none
+workers = 1  # 数据加载;现在，只有1与h5py一起工作
+lr = 1e-4  # 学习速率
+grad_clip = 5.  # 的绝对值剪辑梯度
+print_freq = 100  # 每__批打印培训/验证统计数据
+checkpoint = None  # 到检查点的路径，如果没有就没有
 
-# Data parameters
+# 数据参数
 DATA_DIR = 'data'
 IMG_DIR = 'data/imdb_crop'
 pickle_file = DATA_DIR + '/' + 'imdb-gender-age101.pkl'
