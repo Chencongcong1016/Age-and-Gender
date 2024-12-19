@@ -13,22 +13,24 @@ def detect_faces(image, min_face_size=20.0,
                  thresholds=[0.6, 0.7, 0.8],
                  nms_thresholds=[0.7, 0.7, 0.7]):
     """
-    Arguments:
-        image: an instance of PIL.Image.
-        min_face_size: a float number.
-        thresholds: a list of length 3.
-        nms_thresholds: a list of length 3.
-    Returns:
-        two float numpy arrays of shapes [n_boxes, 4] and [n_boxes, 10],
-        bounding boxes and facial landmarks.
+        参数：
+        image：一个 PIL.Image 实例。
+        min_face_size：一个浮动数值。
+        thresholds：一个长度为 3 的列表。
+        nms_thresholds：一个长度为 3 的列表。
+
+        返回：
+        两个浮动类型的 NumPy 数组，形状分别为 [n_boxes, 4] 和 [n_boxes, 10]，分别表示边界框和面部关键点。
     """
 
+    # 禁用梯度计算，节省内存和计算资源
     with torch.no_grad():
-        # 负荷模型
-        pnet = PNet().to(device)
-        rnet = RNet().to(device)
-        onet = ONet().to(device)
-        onet.eval()
+        
+        # 负荷模型  
+        pnet = PNet().to(device)    # 初始化并加载 PNet 模型，将其移至指定设备（GPU 或 CPU）    
+        rnet = RNet().to(device)    # 初始化并加载 RNet 模型，将其移至指定设备（GPU 或 CPU）     
+        onet = ONet().to(device)    # 初始化并加载 ONet 模型，将其移至指定设备（GPU 或 CPU）        
+        onet.eval()     # 将 ONet 模型设置为评估模式（例如：关闭 Dropout 层）
 
         # 建立一个图像金字塔
         width, height = image.size
@@ -47,10 +49,10 @@ def detect_faces(image, min_face_size=20.0,
         min_length *= m
 
         factor_count = 0
-        while min_length > min_detection_size:
-            scales.append(m * factor ** factor_count)
-            min_length *= factor
-            factor_count += 1
+        while min_length > min_detection_size:          # 当图像的最小边长大于设定的最小检测尺寸时，继续循环
+            scales.append(m * factor ** factor_count)        # 计算当前尺度并添加到 scales 列表中
+            min_length *= factor                # 更新 min_length，乘以比例因子 factor
+            factor_count += 1           # 增加比例计数器
 
         # 阶段1
 
@@ -60,11 +62,11 @@ def detect_faces(image, min_face_size=20.0,
         # 在不同规模上运行P-Net
         for s in scales:
             boxes = run_first_stage(image, pnet, scale=s, threshold=thresholds[0])
-            bounding_boxes.append(boxes)
+            bounding_boxes.append(boxes)    # 将当前数组boxes添加到 bounding_boxes 列表中
 
         # 收集不同尺度的方框（以及偏移量和分数）
-        bounding_boxes = [i for i in bounding_boxes if i is not None]
-        bounding_boxes = np.vstack(bounding_boxes)
+        bounding_boxes = [i for i in bounding_boxes if i is not None]       # 从 bounding_boxes 中筛选出非 None 的元素。
+        bounding_boxes = np.vstack(bounding_boxes)      # 将过滤后的有效边界框列表垂直堆叠（即将多个数组按行连接成一个二维数组）
 
         keep = nms(bounding_boxes[:, 0:5], nms_thresholds[0])
         bounding_boxes = bounding_boxes[keep]

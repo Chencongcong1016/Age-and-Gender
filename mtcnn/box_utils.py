@@ -13,51 +13,51 @@ def nms(boxes, overlap_threshold=0.5, mode='union'):
         list with indices of the selected boxes
     """
 
-    # if there are no boxes, return the empty list
+    # 如果没有方框，则返回空列表
     if len(boxes) == 0:
         return []
 
-    # list of picked indices
+    # 所选索引列表
     pick = []
 
-    # grab the coordinates of the bounding boxes
+    # 获取边界框的坐标
     x1, y1, x2, y2, score = [boxes[:, i] for i in range(5)]
 
     area = (x2 - x1 + 1.0) * (y2 - y1 + 1.0)
-    ids = np.argsort(score)  # in increasing order
+    ids = np.argsort(score)  # 按递增顺序排列
 
     while len(ids) > 0:
 
-        # grab index of the largest value
+        # 抓取最大值的索引
         last = len(ids) - 1
         i = ids[last]
         pick.append(i)
 
-        # compute intersections
-        # of the box with the largest score
-        # with the rest of boxes
+        #计算交点
+        #分数最大的盒子的#
+        #和其他盒子一起
 
-        # left top corner of intersection boxes
+        # 交叉框的左上角
         ix1 = np.maximum(x1[i], x1[ids[:last]])
         iy1 = np.maximum(y1[i], y1[ids[:last]])
 
-        # right bottom corner of intersection boxes
+        # 交叉框的右下角
         ix2 = np.minimum(x2[i], x2[ids[:last]])
         iy2 = np.minimum(y2[i], y2[ids[:last]])
 
-        # width and height of intersection boxes
+        # 交叉框的宽度和高度
         w = np.maximum(0.0, ix2 - ix1 + 1.0)
         h = np.maximum(0.0, iy2 - iy1 + 1.0)
 
-        # intersections' areas
+        # 十字路口的地区
         inter = w * h
         if mode == 'min':
             overlap = inter / np.minimum(area[i], area[ids[:last]])
         elif mode == 'union':
-            # intersection over union (IoU)
+            # 交联（欠条）
             overlap = inter / (area[i] + area[ids[:last]] - inter)
 
-        # delete all boxes where overlap is too big
+        # 删除所有重叠太大的框
         ids = np.delete(
             ids,
             np.concatenate([[last], np.where(overlap > overlap_threshold)[0]])
@@ -102,15 +102,15 @@ def calibrate_box(bboxes, offsets):
     w = np.expand_dims(w, 1)
     h = np.expand_dims(h, 1)
 
-    # this is what happening here:
+    # 这里发生的事情是这样的：
     # tx1, ty1, tx2, ty2 = [offsets[:, i] for i in range(4)]
     # x1_true = x1 + tx1*w
     # y1_true = y1 + ty1*h
     # x2_true = x2 + tx2*w
     # y2_true = y2 + ty2*h
-    # below is just more compact form of this
+    # 下面是它的更简洁的形式
 
-    # are offsets always such that
+    # 补偿总是这样吗
     # x1 < x2 and y1 < y2 ?
 
     translation = np.hstack([w, h, w, h]) * offsets
@@ -141,7 +141,7 @@ def get_image_boxes(bounding_boxes, img, size=24):
         img_box[dy[i]:(edy[i] + 1), dx[i]:(edx[i] + 1), :] = \
             img_array[y[i]:(ey[i] + 1), x[i]:(ex[i] + 1), :]
 
-        # resize
+        # 调整
         img_box = Image.fromarray(img_box)
         img_box = img_box.resize((size, size), Image.BILINEAR)
         img_box = np.asarray(img_box, 'float32')
@@ -174,29 +174,29 @@ def correct_bboxes(bboxes, width, height):
     w, h = x2 - x1 + 1.0, y2 - y1 + 1.0
     num_boxes = bboxes.shape[0]
 
-    # 'e' stands for end
+    # “e”代表结束
     # (x, y) -> (ex, ey)
     x, y, ex, ey = x1, y1, x2, y2
 
-    # we need to cut out a box from the image.
-    # (x, y, ex, ey) are corrected coordinates of the box
-    # in the image.
-    # (dx, dy, edx, edy) are coordinates of the box in the cutout
-    # from the image.
+    # 我们需要从图像中剪出一个盒子。
+    # （x, y, ex, ey）是方框的修正坐标
+    # 在图像中。
+    # （dx, dy, edx, edy）为切割框的坐标
+    # 从图片上看。
     dx, dy = np.zeros((num_boxes,)), np.zeros((num_boxes,))
     edx, edy = w.copy() - 1.0, h.copy() - 1.0
 
-    # if box's bottom right corner is too far right
+    # 如果盒子的右下角太右了
     ind = np.where(ex > width - 1.0)[0]
     edx[ind] = w[ind] + width - 2.0 - ex[ind]
     ex[ind] = width - 1.0
 
-    # if box's bottom right corner is too low
+    # 如果框的右下角太低
     ind = np.where(ey > height - 1.0)[0]
     edy[ind] = h[ind] + height - 2.0 - ey[ind]
     ey[ind] = height - 1.0
 
-    # if box's top left corner is too far left
+    # 如果框的左上角太左
     ind = np.where(x < 0.0)[0]
     dx[ind] = 0.0 - x[ind]
     x[ind] = 0.0

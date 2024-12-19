@@ -11,18 +11,18 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
 def run_first_stage(image, net, scale, threshold):
-    """Run P-Net, generate bounding boxes, and do NMS.
-    Arguments:
-        image: an instance of PIL.Image.
-        net: an instance of pytorch's nn.Module, P-Net.
-        scale: a float number,
-            scale width and height of the image by this number.
-        threshold: a float number,
-            threshold on the probability of a face when generating
-            bounding boxes from predictions of the net.
-    Returns:
-        a float numpy array of shape [n_boxes, 9],
-            bounding boxes with scores and offsets (4 + 1 + 4).
+    """运行 P-Net，生成边界框，并进行非极大值抑制（NMS）。
+    参数：
+        image: 一个 PIL.Image 实例。
+        net: 一个 PyTorch 的 nn.Module 实例，表示 P-Net。
+        scale: 一个浮动数，
+        用这个数值对图像的宽度和高度进行缩放。
+        threshold: 一个浮动数，
+        在从网络的预测结果生成边界框时，设定的面部概率阈值。
+
+    返回：
+        一个形状为 [n_boxes, 9] 的浮动型 NumPy 数组，
+        包含边界框的得分和偏移（4 + 1 + 4）。
     """
 
     with torch.no_grad():
@@ -36,8 +36,8 @@ def run_first_stage(image, net, scale, threshold):
         output = net(img)
         probs = output[1].data.cpu().numpy()[0, 1, :, :]
         offsets = output[0].data.cpu().numpy()
-        # probs: probability of a face at each sliding window
-        # offsets: transformations to true bounding boxes
+        # probs：每个滑动窗口中出现人脸的概率
+        #偏移：转换到真正的边界框
 
         boxes = _generate_bboxes(probs, offsets, scale, threshold)
         if len(boxes) == 0:
