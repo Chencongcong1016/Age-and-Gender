@@ -65,11 +65,10 @@ if __name__ == "__main__":
         # assert img.shape == (3, image_h, image_w)
         # assert np.max(img) <= 255
         inputs[i] = torch.FloatTensor(img / 255.)
-
         sample_preds.append({'i': i, 'gen_true': gender, 'age_true': age, })
 
-    checkpoint = 'BEST_checkpoint_.pth.tar'
-    checkpoint = torch.load(checkpoint)
+    checkpoint = DATA_DIR + '/' +'BEST_checkpoint_.pth.tar'
+    checkpoint = torch.load(checkpoint, map_location=torch.device('cpu'))
     model = checkpoint['model']
     model = model.to(device)
     model.eval()

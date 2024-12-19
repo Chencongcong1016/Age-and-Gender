@@ -75,7 +75,7 @@ if __name__ == "__main__":
     imdb_dict['dob'] = [reformat_date(dob) for dob in imdb_dict['dob']]
     imdb_dict['full_path'] = [create_path(path) for path in imdb_dict['full_path']]
 
-    # Add 'age' key to the dictionary
+    # 向字典中添加‘age’键
     imdb_dict['age'] = imdb_dict['photo_taken'] - imdb_dict['dob']
 
     print("Dictionary created...")

@@ -201,7 +201,7 @@ def correct_bboxes(bboxes, width, height):
     dx[ind] = 0.0 - x[ind]
     x[ind] = 0.0
 
-    # if box's top left corner is too high
+    # 如果框的左上角太高
     ind = np.where(y < 0.0)[0]
     dy[ind] = 0.0 - y[ind]
     y[ind] = 0.0

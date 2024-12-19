@@ -21,7 +21,7 @@ def train_net(args):
     writer = SummaryWriter()
     epochs_since_improvement = 0
 
-    # Initialize / load checkpoint
+    # 初始化/加载检查点
     if checkpoint is None:
         if args.network == 'r100':
             model = resnet101(args)
@@ -31,7 +31,7 @@ def train_net(args):
             model = resnet34(args)
         elif args.network == 'r18':
             model = resnet18(args)
-        else:  # 'face'
+        else:  # “脸”
             model = resnet50(args)
         optimizer = torch.optim.SGD(params=filter(lambda p: p.requires_grad, model.parameters()), lr=args.lr,
                                     momentum=args.mom, weight_decay=args.weight_decay)
@@ -42,10 +42,10 @@ def train_net(args):
         model = checkpoint['model']
         optimizer = checkpoint['optimizer']
 
-    # Move to GPU, if available
+    # 如果可用，移动到GPU
     model = model.to(device)
 
-    # Loss function
+    # 损失函数
     if args.focal_loss:
         age_criterion = FocalLoss(gamma=args.gamma).to(device)
         gender_criterion = FocalLoss(gamma=args.gamma).to(device)
@@ -55,7 +55,7 @@ def train_net(args):
 
     criterion_info = (age_criterion, gender_criterion, args.age_weight)
 
-    # Custom dataloaders
+    # 自定义dataloaders
     train_dataset = AgeGenDataset('train')
     train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=workers,
                                                pin_memory=True)
@@ -65,11 +65,11 @@ def train_net(args):
 
     scheduler = StepLR(optimizer, step_size=args.lr_step, gamma=0.1)
 
-    # Epochs
+    # 时代
     for epoch in range(start_epoch, epochs):
         scheduler.step()
 
-        # One epoch's training
+        # 一个时代的训练
         train_loss, train_gen_accs, train_age_mae = train(train_loader=train_loader,
                                                           model=model,
                                                           criterion_info=criterion_info,
@@ -79,7 +79,7 @@ def train_net(args):
         writer.add_scalar('Train Gender Accuracy', train_gen_accs, epoch)
         writer.add_scalar('Train Age MAE', train_age_mae, epoch)
 
-        # One epoch's validation
+        # 一个时代的验证
         valid_loss, valid_gen_accs, valid_age_mae = validate(val_loader=val_loader,
                                                              model=model,
                                                              criterion_info=criterion_info)
@@ -88,7 +88,7 @@ def train_net(args):
         writer.add_scalar('Valid Gender Accuracy', valid_gen_accs, epoch)
         writer.add_scalar('Valid Age MAE', valid_age_mae, epoch)
 
-        # Check if there was an improvement
+        # 检查是否有改进
         is_best = valid_loss < best_loss
         best_loss = min(valid_loss, best_loss)
         if not is_best:
@@ -97,36 +97,36 @@ def train_net(args):
         else:
             epochs_since_improvement = 0
 
-        # Save checkpoint
+        # 保存检查点
         save_checkpoint(epoch, epochs_since_improvement, model, optimizer, best_loss, is_best)
 
 
 def train(train_loader, model, criterion_info, optimizer, epoch):
-    model.train()  # train mode (dropout and batchnorm is used)
+    model.train()  # 训练模式（使用dropout和batchnorm）
 
     losses = AverageMeter()
     gen_losses = AverageMeter()
     age_losses = AverageMeter()
-    gen_accs = AverageMeter()  # gender accuracy
-    age_mae = AverageMeter()  # age mae
+    gen_accs = AverageMeter()  # 性别的准确性
+    age_mae = AverageMeter()  # 时代美
 
     age_criterion, gender_criterion, age_loss_weight = criterion_info
 
-    # Batches
+    # 批次
     for i, (inputs, age_true, gen_true) in enumerate(train_loader):
         temp=len(train_loader.dataset.samples)
         jindu=i*100/temp
         print(f'时间：{datetime.now().strftime("%Y-%m-%d %H:%M:%S")}    总量：{temp}    当前：{i}    进度：{jindu}%')
         chunk_size = inputs.size()[0]
-        # Move to GPU, if available
+        # 如果可用，移动到GPU
         inputs = inputs.to(device)
         age_true = age_true.to(device)  # [N, 1]
         gen_true = gen_true.to(device)  # [N, 1]
 
-        # Forward prop.
+        # 道具。
         age_out, gen_out = model(inputs)  # age_out => [N, 1], gen_out => [N, 2]
 
-        # Calculate loss
+        # 计算损失
         gen_loss = gender_criterion(gen_out, gen_true)
         age_loss = age_criterion(age_out, age_true)
         age_loss *= age_loss_weight
@@ -136,13 +136,13 @@ def train(train_loader, model, criterion_info, optimizer, epoch):
         optimizer.zero_grad()
         loss.backward()
 
-        # Clip gradients
+        # 剪辑梯度
         clip_gradient(optimizer, grad_clip)
 
-        # Update weights
+        # 更新权重
         optimizer.step()
 
-        # Keep track of metrics
+        # 跟踪指标
         gen_accuracy = accuracy(gen_out, gen_true)
         _, ind = age_out.topk(1, 1, True, True)
         l1_criterion = nn.L1Loss().to(device)
@@ -153,7 +153,7 @@ def train(train_loader, model, criterion_info, optimizer, epoch):
         gen_accs.update(gen_accuracy, chunk_size)
         age_mae.update(age_mae_loss)
 
-        # Print status
+        # 打印状态
         if i % print_freq == 0:
             print('Epoch: [{0}][{1}/{2}]\t'
                   'Loss {loss.val:.4f} ({loss.avg:.4f})\t'
@@ -171,35 +171,35 @@ def train(train_loader, model, criterion_info, optimizer, epoch):
 
 
 def validate(val_loader, model, criterion_info):
-    model.eval()  # eval mode (no dropout or batchnorm)
+    model.eval()  # Eval模式（无dropout或batchnorm）
 
     losses = AverageMeter()
     gen_losses = AverageMeter()
     age_losses = AverageMeter()
-    gen_accs = AverageMeter()  # gender accuracy
-    age_mae = AverageMeter()  # age mae
+    gen_accs = AverageMeter()  # 性别的准确性
+    age_mae = AverageMeter()  # 时代美
 
     age_criterion, gender_criterion, age_loss_weight = criterion_info
 
     with torch.no_grad():
-        # Batches
+        # 批次
         for i, (inputs, age_true, gen_true) in enumerate(val_loader):
             chunk_size = inputs.size()[0]
-            # Move to GPU, if available
+            # 如果可用，移动到GPU
             inputs = inputs.to(device)
             age_true = age_true.to(device)
             gen_true = gen_true.to(device)
 
-            # Forward prop.
+            # 道具。
             age_out, gen_out = model(inputs)
 
-            # Calculate loss
+            # 计算损失
             gen_loss = gender_criterion(gen_out, gen_true)
             age_loss = age_criterion(age_out, age_true)
             age_loss *= age_loss_weight
             loss = gen_loss + age_loss
 
-            # Keep track of metrics
+            # 跟踪指标
             gender_accuracy = accuracy(gen_out, gen_true)
             _, ind = age_out.topk(1, 1, True, True)
             l1_criterion = nn.L1Loss().to(device)

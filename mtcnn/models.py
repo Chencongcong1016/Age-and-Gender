@@ -19,7 +19,7 @@ class Flatten(nn.Module):
             a float tensor with shape [batch_size, c*h*w].
         """
 
-        # without this pretrained model isn't working
+        # 没有这个预训练的模型是行不通的
         x = x.transpose(3, 2).contiguous()
 
         return x.view(x.size(0), -1)
@@ -30,12 +30,12 @@ class PNet(nn.Module):
     def __init__(self):
         super(PNet, self).__init__()
 
-        # suppose we have input with size HxW, then
-        # after first layer: H - 2,
-        # after pool: ceil((H - 2)/2),
-        # after second conv: ceil((H - 2)/2) - 2,
-        # after last conv: ceil((H - 2)/2) - 4,
-        # and the same for W
+        # 假设我们有一个大小为HxW的输入，那么
+        #第一层后：H - 2，
+        # after pool: ceil((H - 2)/2)，
+        #后二次conv: ceil((H - 2)/2) - 2，
+        #后一次conv: ceil((H - 2)/2) - 4，
+        # W也是一样
 
         self.features = nn.Sequential(OrderedDict([
             ('conv1', nn.Conv2d(3, 10, 3, 1)),

@@ -85,7 +85,7 @@ def save_checkpoint(epoch, epochs_since_improvement, model, optimizer, loss, is_
              'optimizer': optimizer}
     filename = 'checkpoint_' + '.pth.tar'
     torch.save(state, filename)
-    # If this checkpoint is the best so far, store a copy so it doesn't get overwritten by a worse checkpoint
+    # 如果这个检查点是目前为止最好的，那么存储一个副本，这样它就不会被更差的检查点覆盖
     if is_best:
         torch.save(state, 'BEST_' + filename)
 
@@ -155,7 +155,7 @@ def align_face(img_fn, facial5points):
     outer_padding = (0, 0)
     output_size = (image_h, image_w)
 
-    # get the reference 5 landmarks position in the crop settings
+    # 在裁剪设置中获取参考5地标位置
     reference_5pts = get_reference_facial_points(
         output_size, inner_padding_factor, outer_padding, default_square)
 
@@ -166,7 +166,7 @@ def align_face(img_fn, facial5points):
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Train face network')
-    # general
+    # 一般
     parser.add_argument('--pretrained', type=bool, default=False, help='pretrained model')
     parser.add_argument('--network', default='r50', help='specify network')
     parser.add_argument('--end-epoch', type=int, default=50, help='training epoch size.')

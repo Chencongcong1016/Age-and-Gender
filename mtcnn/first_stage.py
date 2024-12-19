@@ -26,7 +26,7 @@ def run_first_stage(image, net, scale, threshold):
     """
 
     with torch.no_grad():
-        # scale the image and convert it to a float array
+        # 缩放图像并将其转换为浮点数组
         width, height = image.size
         sw, sh = math.ceil(width * scale), math.ceil(height * scale)
         img = image.resize((sw, sh), Image.BILINEAR)
@@ -60,18 +60,18 @@ def _generate_bboxes(probs, offsets, scale, threshold):
         a float numpy array of shape [n_boxes, 9]
     """
 
-    # applying P-Net is equivalent, in some sense, to
-    # moving 12x12 window with stride 2
+    #应用P-Net在某种意义上相当于
+    #移动12x12的窗口，步幅2
     stride = 2
     cell_size = 12
 
-    # indices of boxes where there is probably a face
+    # 可能有脸的盒子的索引
     inds = np.where(probs > threshold)
 
     if inds[0].size == 0:
         return np.array([])
 
-    # transformations of bounding boxes
+    # 边界框的变换
     tx1, ty1, tx2, ty2 = [offsets[0, i, inds[0], inds[1]] for i in range(4)]
     # they are defined as:
     # w = x2 - x1 + 1
@@ -84,8 +84,8 @@ def _generate_bboxes(probs, offsets, scale, threshold):
     offsets = np.array([tx1, ty1, tx2, ty2])
     score = probs[inds[0], inds[1]]
 
-    # P-Net is applied to scaled images
-    # so we need to rescale bounding boxes back
+    # P-Net应用于缩放图像
+    # 所以我们需要重新调整边界框
     bounding_boxes = np.vstack([
         np.round((stride * inds[1] + 1.0) / scale),
         np.round((stride * inds[0] + 1.0) / scale),
@@ -93,6 +93,6 @@ def _generate_bboxes(probs, offsets, scale, threshold):
         np.round((stride * inds[0] + 1.0 + cell_size) / scale),
         score, offsets
     ])
-    # why one is added?
+    # 为什么要加一个？
 
     return bounding_boxes.T

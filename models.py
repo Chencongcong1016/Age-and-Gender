@@ -264,7 +264,7 @@ class AgeGenPredModel(nn.Module):
 
         resnet = torchvision.models.resnet18(pretrained=True)
 
-        # Remove linear and pool layers (since we're not doing classification)
+        # 删除线性层和池层（因为我们不做分类）
         modules = list(resnet.children())[:-2]
         self.resnet = nn.Sequential(*modules)
         self.pool = nn.AvgPool2d(4)

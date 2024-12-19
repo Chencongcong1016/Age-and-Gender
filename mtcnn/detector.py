@@ -24,25 +24,25 @@ def detect_faces(image, min_face_size=20.0,
     """
 
     with torch.no_grad():
-        # LOAD MODELS
+        # 负荷模型
         pnet = PNet().to(device)
         rnet = RNet().to(device)
         onet = ONet().to(device)
         onet.eval()
 
-        # BUILD AN IMAGE PYRAMID
+        # 建立一个图像金字塔
         width, height = image.size
         min_length = min(height, width)
 
         min_detection_size = 12
         factor = 0.707  # sqrt(0.5)
 
-        # scales for scaling the image
+        # 缩放图像的尺度
         scales = []
 
-        # scales the image so that
-        # minimum size that we can detect equals to
-        # minimum face size that we want to detect
+        # 缩放图像，以便
+        # 我们可以检测到的最小尺寸等于
+        # 我们想要检测的最小面大小
         m = min_detection_size / min_face_size
         min_length *= m
 
@@ -52,31 +52,31 @@ def detect_faces(image, min_face_size=20.0,
             min_length *= factor
             factor_count += 1
 
-        # STAGE 1
+        # 阶段1
 
-        # it will be returned
+        # 它会被退回
         bounding_boxes = []
 
-        # run P-Net on different scales
+        # 在不同规模上运行P-Net
         for s in scales:
             boxes = run_first_stage(image, pnet, scale=s, threshold=thresholds[0])
             bounding_boxes.append(boxes)
 
-        # collect boxes (and offsets, and scores) from different scales
+        # 收集不同尺度的方框（以及偏移量和分数）
         bounding_boxes = [i for i in bounding_boxes if i is not None]
         bounding_boxes = np.vstack(bounding_boxes)
 
         keep = nms(bounding_boxes[:, 0:5], nms_thresholds[0])
         bounding_boxes = bounding_boxes[keep]
 
-        # use offsets predicted by pnet to transform bounding boxes
+        # 使用pnet预测的偏移量来转换边界框
         bounding_boxes = calibrate_box(bounding_boxes[:, 0:5], bounding_boxes[:, 5:])
         # shape [n_boxes, 5]
 
         bounding_boxes = convert_to_square(bounding_boxes)
         bounding_boxes[:, 0:4] = np.round(bounding_boxes[:, 0:4])
 
-        # STAGE 2
+        # 第二阶段
 
         img_boxes = get_image_boxes(bounding_boxes, image, size=24)
         img_boxes = Variable(torch.FloatTensor(img_boxes).to(device))
@@ -95,7 +95,7 @@ def detect_faces(image, min_face_size=20.0,
         bounding_boxes = convert_to_square(bounding_boxes)
         bounding_boxes[:, 0:4] = np.round(bounding_boxes[:, 0:4])
 
-        # STAGE 3
+        # 第三阶段
 
         img_boxes = get_image_boxes(bounding_boxes, image, size=48)
         if len(img_boxes) == 0:
@@ -112,7 +112,7 @@ def detect_faces(image, min_face_size=20.0,
         offsets = offsets[keep]
         landmarks = landmarks[keep]
 
-        # compute landmark points
+        # 计算地标点
         width = bounding_boxes[:, 2] - bounding_boxes[:, 0] + 1.0
         height = bounding_boxes[:, 3] - bounding_boxes[:, 1] + 1.0
         xmin, ymin = bounding_boxes[:, 0], bounding_boxes[:, 1]

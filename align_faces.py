@@ -7,7 +7,7 @@ import cv2
 import numpy as np
 from skimage import transform as trans
 
-# reference facial points, a list of coordinates (x,y)
+# 参考面部点，坐标（x,y）的列表
 REFERENCE_FACIAL_POINTS = [
     [30.29459953, 51.69630051],
     [65.53179932, 51.50139999],
@@ -32,7 +32,7 @@ def get_reference_facial_points(output_size=None,
     tmp_5pts = np.array(REFERENCE_FACIAL_POINTS)
     tmp_crop_size = np.array(DEFAULT_CROP_SIZE)
 
-    # 0) make the inner region a square
+    # 0)使内部区域成为一个正方形
     if default_square:
         size_diff = max(tmp_crop_size) - tmp_crop_size
         tmp_5pts += size_diff / 2
@@ -57,7 +57,7 @@ def get_reference_facial_points(output_size=None,
             raise FaceWarpException(
                 'No paddings to do, output_size must be None or {}'.format(tmp_crop_size))
 
-    # check output size
+    # 检查输出大小
     if not (0 <= inner_padding_factor <= 1.0):
         raise FaceWarpException('Not (0 <= inner_padding_factor <= 1.0)')
 
@@ -73,7 +73,7 @@ def get_reference_facial_points(output_size=None,
         raise FaceWarpException('Not (outer_padding[0] < output_size[0]'
                                 'and outer_padding[1] < output_size[1])')
 
-    # 1) pad the inner region according inner_padding_factor
+    # 1)根据inner_padding_factor填充内部区域
     # print('---> STEP1: pad the inner region according inner_padding_factor')
     if inner_padding_factor > 0:
         size_diff = tmp_crop_size * inner_padding_factor * 2
@@ -83,7 +83,7 @@ def get_reference_facial_points(output_size=None,
     # print('              crop_size = ', tmp_crop_size)
     # print('              reference_5pts = ', tmp_5pts)
 
-    # 2) resize the padded inner region
+    # 2)调整填充内区域的大小
     # print('---> STEP2: resize the padded inner region')
     size_bf_outer_pad = np.array(output_size) - np.array(outer_padding) * 2
     # print('              crop_size = ', tmp_crop_size)
@@ -102,7 +102,7 @@ def get_reference_facial_points(output_size=None,
     # print('              crop_size = ', tmp_crop_size)
     # print('              reference_5pts = ', tmp_5pts)
 
-    # 3) add outer_padding to make output_size
+    # 3)添加outer_padding使output_size
     reference_5point = tmp_5pts + np.array(outer_padding)
     tmp_crop_size = output_size
     # print('---> STEP3: add outer_padding to make output_size')

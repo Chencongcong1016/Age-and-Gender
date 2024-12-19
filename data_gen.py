@@ -10,8 +10,8 @@ from torchvision import transforms
 from config import *
 from utils import align_face
 
-# Data augmentation and normalization for training
-# Just normalization for validation
+# 数据增强和规范化训练
+# 只是标准化验证
 data_transforms = {
     'train': transforms.Compose([
         transforms.RandomHorizontalFlip(),
