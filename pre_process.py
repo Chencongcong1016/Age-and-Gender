@@ -241,7 +241,7 @@ if __name__ == "__main__":
                 current_age[raw_age[i]] += 1
             else:
                 temp+=1
-                print("-" * 40+"  不是人脸总个数"+str(temp) +"-" * 40)  # 添加分隔线
+                print("-" * 40+"  不是人脸总个数:"+str(temp) +"-" * 40)  # 添加分隔线
 
     try:
         # 将 samples 列表中的元素随机打乱

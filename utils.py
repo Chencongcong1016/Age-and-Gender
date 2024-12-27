@@ -165,21 +165,35 @@ def align_face(img_fn, facial5points):
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='Train face network')
+    """
+    定义函数 parse_args,返回解析后的参数对象
+    这将解析以下参数：
+    - 使用预训练模型：`--pretrained True`
+    - 使用 `resnet50` 网络架构：`--network resnet50`
+    - 训练 100 个 epoch：`--end-epoch 100`
+    - 初始学习率为 0.001：`--lr 0.001`
+    - 批量大小为 256：`--batch-size 256`
+
+    通过 `args` 对象，你可以在代码中访问这些参数的值。例如，`args.lr` 将是 `0.001`，`args.batch_size` 将是 `256`。
+
+    ### 总结：
+    `parse_args()` 函数是一个标准的命令行参数解析器，它定义了一些常见的训练配置参数，并返回一个包含解析结果的对象。使用这些参数，你可以灵活地调整模型训练过程中的设置。
+    """
+    parser = argparse.ArgumentParser(description='Train face network')                              # 创建 ArgumentParser 对象，description 提供了脚本的简短说明，在帮助信息中显示。此脚本用于训练人脸识别网络。
     # 一般
-    parser.add_argument('--pretrained', type=bool, default=False, help='pretrained model')
-    parser.add_argument('--network', default='r50', help='specify network')
-    parser.add_argument('--end-epoch', type=int, default=50, help='training epoch size.')
-    parser.add_argument('--lr', type=float, default=0.01, help='start learning rate')
-    parser.add_argument('--lr-step', type=int, default=10, help='period of learning rate decay')
-    parser.add_argument('--optimizer', default='sgd', help='optimizer')
-    parser.add_argument('--weight-decay', type=float, default=0.0005, help='weight decay')
-    parser.add_argument('--mom', type=float, default=0.9, help='momentum')
-    parser.add_argument('--emb-size', type=int, default=512, help='embedding length')
-    parser.add_argument('--batch-size', type=int, default=512, help='batch size in each context')
-    parser.add_argument('--focal-loss', type=bool, default=False, help='focal loss')
-    parser.add_argument('--gamma', type=float, default=2.0, help='focusing parameter gamma')
-    parser.add_argument('--use-se', type=bool, default=False, help='use SEBlock')
-    parser.add_argument('--age-weight', type=float, default=1.0, help='age loss weight')
-    args = parser.parse_args()
-    return args
+    parser.add_argument('--pretrained', type=bool, default=False, help='pretrained model')          # --pretrained 参数控制是否使用预训练模型。type=bool 表示它是一个布尔值，默认值为 False，帮助信息中会显示 "pretrained model"。
+    parser.add_argument('--network', default='r50', help='specify network')                         # --network 参数用于指定使用的神经网络架构，默认为 'r50'，表示 ResNet-50。用户可以通过该参数选择其他架构。
+    parser.add_argument('--end-epoch', type=int, default=50, help='training epoch size.')           # --end-epoch 参数用于指定训练的总轮次（epoch）。type=int 表示该参数为整数，默认值为 50，表示训练 50 个 epoch。
+    parser.add_argument('--lr', type=float, default=0.01, help='start learning rate')               # --lr 参数指定初始学习率。type=float 表示该参数是浮动类型（浮动的数字），默认值为 0.01。
+    parser.add_argument('--lr-step', type=int, default=10, help='period of learning rate decay')    # --lr-step 参数用于指定学习率衰减的周期。每经过多少个 epoch，就会减小学习率。默认值为 10。
+    parser.add_argument('--optimizer', default='sgd', help='optimizer')                             # --optimizer 参数用于指定训练过程中使用的优化器。默认为 'sgd'（随机梯度下降），但用户可以选择其他优化器（如 Adam）。
+    parser.add_argument('--weight-decay', type=float, default=0.0005, help='weight decay')          # --weight-decay 参数用于控制权重衰减（L2 正则化）的强度，防止过拟合。默认值为 0.0005。
+    parser.add_argument('--mom', type=float, default=0.9, help='momentum')                          # --mom 参数指定优化器的动量。动量值通常在 0 到 1 之间，默认值为 0.9。
+    parser.add_argument('--emb-size', type=int, default=512, help='embedding length')               # --emb-size 参数表示模型输出的人脸特征嵌入向量的长度。一般来说，这个值越大，模型能捕捉到的特征信息越多。默认值为 512。
+    parser.add_argument('--batch-size', type=int, default=512, help='batch size in each context')   # --batch-size 参数用于指定每次训练中所使用的批量大小。默认值为 512，即每次训练时使用 512 个样本。
+    parser.add_argument('--focal-loss', type=bool, default=False, help='focal loss')                # --focal-loss 参数用于控制是否启用焦点损失（Focal Loss）。焦点损失是一种对类别不平衡有较强鲁棒性的损失函数，默认为 False。
+    parser.add_argument('--gamma', type=float, default=2.0, help='focusing parameter gamma')        # --gamma 参数指定焦点损失函数中的聚焦参数。较大的值让模型更关注难以分类的样本，默认值为 2.0。
+    parser.add_argument('--use-se', type=bool, default=False, help='use SEBlock')                   # --use-se 参数用于指定是否使用 SE Block（Squeeze-and-Excitation Block），SE Block 可以增强网络对不同通道的注意力。默认为 False。
+    parser.add_argument('--age-weight', type=float, default=1.0, help='age loss weight')            # --age-weight 参数用于指定年龄损失（age loss）部分的权重。在多任务学习中，如果有年龄预测任务，可以通过调整此参数来平衡不同任务之间的权重。默认值为 1.0。
+    args = parser.parse_args()                                                                      # 调用 parse_args() 方法解析命令行参数，将结果保存在 args 中
+    return args                                                                                     # 返回解析后的参数对象 `args`，包含所有命令行传入的参数值
