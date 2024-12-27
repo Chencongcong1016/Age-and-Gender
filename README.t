@@ -10,6 +10,19 @@
 
 这里为简洁只使用 IMDB 数据集。
 
+### 数据类型
+    dob：出生日期 （Matlab serial date number）
+    photo_taken：照片拍摄年份
+    full_path：文件路径
+    性别：女性 0 个，男性 1 个，未知时为 NaN
+    name：名人姓名
+    face_location：面部的位置。要在 Matlab 中裁剪脸部，请运行
+    IMG（face_location（2）：face_location（4），face_location（1）：face_location（3），:)）
+    face_score：detector 分数（越高越好）。Inf表示在图像中没有找到人脸，然后 face_location只返回整个图像
+    second_face_score：得分第二高的人脸的 detector 分数。这对于忽略具有多个面的图像非常有用。如果未检测到第二张人脸，则 second_face_score为 NaN。
+    celeb_names （仅限 IMDB）：所有名人姓名列表
+    celeb_id（仅限 IMDB）：名人姓名索引
+    
 ### 年龄分布：
 
 460723张照片为平衡每个年龄最多只保存5000张，清洗后得到163065张，按年龄分布作图：
