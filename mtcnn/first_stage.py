@@ -108,12 +108,17 @@ def run_first_stage(image, net, scale, threshold):
         boxes = _generate_bboxes(probs, offsets, scale, threshold)
         if len(boxes) == 0:
             return None
-
+        
+        #这里应用了 **非极大值抑制（NMS）** 算法，来从候选框中筛选出最合适的框。`nms` 函数的输入是一个边界框列表，通常是 `boxes[:, 0:5]`，即提取出每个候选框的前 5 个属性，通常是：
+        #- `x1, y1`（左上角坐标）
+        #- `x2, y2`（右下角坐标）
+        #- `score`（得分）
+        #overlap_threshold=0.5` 是 NMS 中的 **重叠阈值**，表示如果两个框的重叠区域超过 50%，那么 NMS 会保留得分较高的那个框，并丢弃另一个框。
         keep = nms(boxes[:, 0:5], overlap_threshold=0.5)
         return boxes[keep]
 
 
-def _generate_bboxes(probs, offsets, scale, threshold):
+def  _generate_bboxes(probs, offsets, scale, threshold):
     """
     函数 `_generate_bboxes` 的作用是：在图像中生成可能包含人脸的边界框，并返回这些边界框的详细信息。
 

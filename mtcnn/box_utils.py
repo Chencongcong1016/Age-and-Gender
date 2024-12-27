@@ -245,40 +245,51 @@ def nms(boxes, overlap_threshold=0.5, mode='union'):
 
 
 def convert_to_square(bboxes):
-    """Convert bounding boxes to a square form.
-    Arguments:
-        bboxes: a float numpy array of shape [n, 5].
-    Returns:
-        a float numpy array of shape [n, 5],
-            squared bounding boxes.
+    """将边界框转换为正方形。
+    
+    参数:
+    Bboxes:形状为[n, 5]的浮点numpy数组。
+
+    返回:
+    一个形状为[n, 5]的浮点numpy数组,
+    平方的边界框。
+
+    以下步骤将矩形框转换为正方形框：
+    1. 计算矩形框的宽度和高度。
+    2. 选择最大边长来确定正方形的边长。
+    3. 根据最大边长重新计算正方形框的四个坐标，使其居中于原矩形框。
     """
 
-    square_bboxes = np.zeros_like(bboxes)
-    x1, y1, x2, y2 = [bboxes[:, i] for i in range(4)]
-    h = y2 - y1 + 1.0
-    w = x2 - x1 + 1.0
-    max_side = np.maximum(h, w)
-    square_bboxes[:, 0] = x1 + w * 0.5 - max_side * 0.5
-    square_bboxes[:, 1] = y1 + h * 0.5 - max_side * 0.5
-    square_bboxes[:, 2] = square_bboxes[:, 0] + max_side - 1.0
-    square_bboxes[:, 3] = square_bboxes[:, 1] + max_side - 1.0
+    square_bboxes = np.zeros_like(bboxes)       # 初始化一个与输入相同形状的全零数组，用来存储转换后的正方形框
+    x1, y1, x2, y2 = [bboxes[:, i] for i in range(4)]       # 提取输入边界框的四个坐标
+    h = y2 - y1 + 1.0           # 计算矩形框的高度
+    w = x2 - x1 + 1.0           # 计算矩形框的宽度
+    max_side = np.maximum(h, w)     # 选择宽度和高度中的最大值，确保正方形的边长至少和矩形的最大边一样长
+
+    # 计算新的正方形框的左上角坐标(x1, y1)和右下角坐标(x2, y2)
+    square_bboxes[:, 0] = x1 + w * 0.5 - max_side * 0.5         # 计算新的左上角 x 坐标
+    square_bboxes[:, 1] = y1 + h * 0.5 - max_side * 0.5         # 计算新的左上角 y 坐标
+    square_bboxes[:, 2] = square_bboxes[:, 0] + max_side - 1.0      # 计算新的右下角 x 坐标
+    square_bboxes[:, 3] = square_bboxes[:, 1] + max_side - 1.0      # 计算新的右下角 y 坐标
     return square_bboxes
 
 
 def calibrate_box(bboxes, offsets):
-    """Transform bounding boxes to be more like true bounding boxes.
-    'offsets' is one of the outputs of the nets.
-    Arguments:
-        bboxes: a float numpy array of shape [n, 5].
-        offsets: a float numpy array of shape [n, 4].
-    Returns:
-        a float numpy array of shape [n, 5].
+    """将边界框转换为更像真正的边界框。
+    “偏移量”是网络的输出之一。
+
+    参数:
+    Bboxes:形状为[n, 5]的浮点numpy数组。
+    偏移量：形状为[n, 4]的浮点numpy数组。
+
+    返回:
+    形状为[n, 5]的浮点numpy数组。
     """
-    x1, y1, x2, y2 = [bboxes[:, i] for i in range(4)]
-    w = x2 - x1 + 1.0
-    h = y2 - y1 + 1.0
-    w = np.expand_dims(w, 1)
-    h = np.expand_dims(h, 1)
+    x1, y1, x2, y2 = [bboxes[:, i] for i in range(4)]    # 提取原始边界框的坐标
+    w = x2 - x1 + 1.0       # 计算边界框的宽度
+    h = y2 - y1 + 1.0       # 计算边界框的高度
+    w = np.expand_dims(w, 1)    # 增加维度，变成 [n, 1] 形状
+    h = np.expand_dims(h, 1)    # 增加维度，变成 [n, 1] 形状
 
     # 这里发生的事情是这样的：
     # tx1, ty1, tx2, ty2 = [offsets[:, i] for i in range(4)]
@@ -291,41 +302,46 @@ def calibrate_box(bboxes, offsets):
     # 补偿总是这样吗
     # x1 < x2 and y1 < y2 ?
 
-    translation = np.hstack([w, h, w, h]) * offsets
-    bboxes[:, 0:4] = bboxes[:, 0:4] + translation
+    translation = np.hstack([w, h, w, h]) * offsets     # 使用偏移量调整边界框的坐标
+    bboxes[:, 0:4] = bboxes[:, 0:4] + translation       # 调整原始边界框
     return bboxes
 
 
 def get_image_boxes(bounding_boxes, img, size=24):
-    """Cut out boxes from the image.
-    Arguments:
-        bounding_boxes: a float numpy array of shape [n, 5].
-        img: an instance of PIL.Image.
-        size: an integer, size of cutouts.
-    Returns:
-        a float numpy array of shape [n, 3, size, size].
+    """主要作用是从给定的图像中，根据指定的边界框（bounding boxes）来裁剪出对应的小图块，
+    并将这些小图块调整为统一的大小（默认为24x24），然后进行一定的预处理，最后返回这些处理后的小图块。
+    
+    参数:
+        Bounding_boxes:形状为[n, 5]的浮点numpy数组。
+        img:一个pl . image的实例。
+        Size:一个整数，表示插口的大小。
+
+    返回:
+        形状为[n, 3, size, size]的浮点numpy数组。
     """
 
-    num_boxes = len(bounding_boxes)
+    num_boxes = len(bounding_boxes)         #初始化变量
     width, height = img.size
 
-    [dy, edy, dx, edx, y, ey, x, ex, w, h] = correct_bboxes(bounding_boxes, width, height)
-    img_boxes = np.zeros((num_boxes, 3, size, size), 'float32')
+    [dy, edy, dx, edx, y, ey, x, ex, w, h] = correct_bboxes(bounding_boxes, width, height)      #调整边界框坐标
+    img_boxes = np.zeros((num_boxes, 3, size, size), 'float32')         #创建一个存储裁剪图像的数组
 
-    for i in range(num_boxes):
+    #处理每一个边界框，裁剪出小图块
+    for i in range(num_boxes):     
         img_box = np.zeros((h[i], w[i], 3), 'uint8')
 
         img_array = np.asarray(img, 'uint8')
         img_box[dy[i]:(edy[i] + 1), dx[i]:(edx[i] + 1), :] = \
             img_array[y[i]:(ey[i] + 1), x[i]:(ex[i] + 1), :]
 
-        # 调整
+        # 调调整裁剪出的图像块的大小
         img_box = Image.fromarray(img_box)
         img_box = img_box.resize((size, size), Image.BILINEAR)
         img_box = np.asarray(img_box, 'float32')
 
-        img_boxes[i, :, :, :] = _preprocess(img_box)
-
+        img_boxes[i, :, :, :] = _preprocess(img_box)    #对图像块进行预处理
+    # print("-" * 40+"  img_boxes[0][0][0] "+"-" * 40)  # 添加分隔线
+    # print(img_boxes[0][0][0])
     return img_boxes
 
 
@@ -400,13 +416,38 @@ def _preprocess(img):
     
     """
 
+
+    """  测试找问题
+    print("打印原始形状:", img.shape)  # 打印原始形状
+    
+    try:
+        img = img.transpose((2, 0, 1))
+        print("打印转置后的形状:", img.shape)  # 打印转置后的形状
+    except Exception as e:
+        print("转置误差:", e)
+        return None
+    print("img 类型:", type(img))
+    print("img 形状:", img.shape)
+    try:
+        img = np.expand_dims(img, 0)
+        print("在expand_dimms之后,img shape:", img.shape)
+    except Exception as e:
+        print("执行expand_dims时出错:", e)
+        return None
+    
+    img = (img - 127.5) * 0.0078125
+    print("归一化后, img shape:", img.shape)
+    """
+
     #   `transpose((2, 0, 1))` 会将通道维度 `c` 移到最前面，新的形状变为 `(c, h, w)`。
     #   这样，图像的形状会从 `(h, w, c)` 变成 `(c, h, w)`，符合许多深度学习框架（如 PyTorch）对于图像数据的要求。
     img = img.transpose((2, 0, 1))
-
+    # print("-" * 40+"  img "+"-" * 40)  # 添加分隔线
+    # print(img)
     #   `np.expand_dims(img, 0)` 会将其扩展为 `(1, 3, 400, 300)`，增加了一个批次维度。
     img = np.expand_dims(img, 0)
-    
+    # print("-" * 40+"  img扩展后 "+"-" * 40)  # 添加分隔线
+    # print(img)
     #   假设图像的像素值范围是 `[0, 255]`，通常我们需要将其缩放到一个更小的范围，通常是 `[0, 1]` 或 `[-1, 1]`，这有助于加速神经网络的训练并提高收敛速度。
     #   具体的归一化操作：
     #   - `img - 127.5`：首先将每个像素值减去 127.5，这样像素值的范围变成了 `[-127.5, 127.5]`。这个步骤的目的是将像素值的中心调整到 0。

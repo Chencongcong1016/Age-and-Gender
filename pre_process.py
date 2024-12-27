@@ -94,11 +94,13 @@ def get_face_attributes(full_path):
             # 如果边界框足够大，返回有效的结果
             return is_valid, (int(round(x1)), int(round(y1)), int(round(x2)), int(round(y2))), landmarks
 
-    except KeyboardInterrupt:
+    except KeyboardInterrupt as e:
         # 如果程序被用户中断（如按下 Ctrl+C），抛出异常
+        print("报错地方KeyboardInterrupt:", e)
         raise
-    except:
+    except Exception as e:
         # 其他异常情况下，返回 False 和 None
+        print("报错地方Exception:", e)
         pass
 
     # 默认返回 False 和 None，表示没有有效的人脸检测
@@ -199,6 +201,7 @@ if __name__ == "__main__":
     imgs = []
     samples = []
     current_age = np.zeros(101)
+    temp=0  #是不是人脸
     # tqdm 是一个用于显示进度条的 Python 库，它能帮助你在执行长时间的循环或任务时查看进度，从而提高用户体验。
     # range(len(raw_sface))生成一个从 0 到 len(raw_sface) - 1 的整数序列，通常用于循环中表示索引。
     # for i in tqdm(range(len(raw_sface))):
@@ -211,7 +214,7 @@ if __name__ == "__main__":
         if np.isnan(sface) and raw_age[i] >= 0 and raw_age[i] <= 100 and not np.isnan(raw_gender[i]):
             is_valid, face_location, landmarks = get_face_attributes(raw_path[i])
 
-            #是有效的
+            #是有效的人脸
             if is_valid:
 
                 # 定义一个临时变量 age_tmp，虽然在代码中未使用，但可能是为了后续的扩展或调试
@@ -232,9 +235,13 @@ if __name__ == "__main__":
                 # 将包含年龄、性别、图片路径、人脸位置和关键点信息的数据保存到 samples 列表中
                 samples.append({'age': int(raw_age[i]), 'gender': int(raw_gender[i]), 'full_path': raw_path[i],
                                 'face_location': face_location, 'landmarks': landmarks})
-                
+                # print("-" * 40+"  samples:"+ str(i) +"-" * 40)  # 添加分隔线
+                # print(samples)
                 # 更新 current_age 字典中当前年龄 raw_age[i] 的计数，表示该年龄已经被处理过一次
                 current_age[raw_age[i]] += 1
+            else:
+                temp+=1
+                print("-" * 40+"  不是人脸总个数"+str(temp) +"-" * 40)  # 添加分隔线
 
     try:
         # 将 samples 列表中的元素随机打乱
