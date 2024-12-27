@@ -20,7 +20,7 @@ def extract(filename):
 
 
 def reformat_date(mat_date): 
-    """
+    """    重新格式化给定日期（mat_date），并在对可能的闰年进行调整后返回年份。此函数接受顺序格式的日期（即，从0001-01-01开始的天数），从中减去366天（以调整闰年），并返回结果日期所在的年份。
     重新格式化给定日期（mat_date），并在对可能的闰年进行调整后返回年份。
     此函数接受顺序格式的日期（即，从0001-01-01开始的天数），
     从中减去366天（以调整闰年），并返回结果日期所在的年份。
@@ -40,7 +40,7 @@ def reformat_date(mat_date):
 
 
 def create_path(path):
-    """
+    """ 根据给定的路径（path）和图片目录（IMG_DIR），创建并返回一个正确格式的路径。
     根据给定的路径（path）和图片目录（IMG_DIR），
     创建并返回一个正确格式的路径。
 
@@ -61,6 +61,10 @@ def create_path(path):
 
 
 def get_face_attributes(full_path):
+    """ 获取人脸属性
+
+    返回 False 和 None，表示没有有效的人脸检测
+    """
     try:
         # 使用 PIL 打开图像文件，并将图像转换为 RGB 模式
         img = Image.open(full_path).convert('RGB')
@@ -109,7 +113,21 @@ if __name__ == "__main__":
 
     # 使用 scipy 库中的 io 模块来加载 .mat 文件的代码。
     mat = scipy.io.loadmat('data/imdb/imdb.mat')
-    imdb = mat['imdb'][0, 0]   # 这个是什么意思？？？
+    imdb = mat['imdb'][0, 0]
+    """ 调试打印：imdb
+    # 调试打印：imdb
+    # print("------------------------------------------------imdb------------------------------------------------")
+    # print(imdb)
+    # for d in imdb:
+    #     print("------------------------------------------------d------------------------------------------------")
+    #     print(d)
+    #     print("------------------------------------------------d[0]------------------------------------------------")
+    #     print(d[0])
+    #     data=d[0]
+    #     print("------------------------------------------------data------------------------------------------------")
+    #     print(data)
+    """
+
     data = [d[0] for d in imdb]
     keys = ['dob',      # 出生日期
             'photo_taken',  # 照片拍摄年份
@@ -125,8 +143,35 @@ if __name__ == "__main__":
     
     # np.asarray(data, dtype=object)，是将 data 转换为 NumPy 数组，并确保数组的数据类型是 object
     # zip 函数是一个内建函数：如果 keys = ['a', 'b', 'c'] 和 data = [1, 2, 3]，那么 zip(keys, data) 会返回一个迭代器，生成如下的元组：('a', 1), ('b', 2), ('c', 3)。
-    imdb_dict = dict(zip(keys, np.asarray(data, dtype=object)))             
+    imdb_dict = dict(zip(keys, np.asarray(data, dtype=object))) 
+    """ 调试打印：imdb_dict
+    # 调试打印：imdb_dict
+    # for key, value in imdb_dict.items():
+    #     print(f"Key: {key}")
+    #     print(f"Value: {value}")
+    #     print("-" * 40+"Key、Value"+"-" * 40)  # 添加分隔线
+    """
+
+    """ 调试打印：imdb_dict['dob']
+    # 调试打印：imdb_dict['dob']
+    # for dob in imdb_dict['dob']:
+    #     print("-" * 40+"dob"+"-" * 40)  # 添加分隔线
+    #     print(dob)      #719205
+    #     temp=reformat_date(dob)
+    #     print("-" * 40+"temp"+"-" * 40)  # 添加分隔线
+    #     print(temp)     #年份：1969
+    """
     imdb_dict['dob'] = [reformat_date(dob) for dob in imdb_dict['dob']]
+
+    """ 调试打印：imdb_dict['full_path']
+    # 调试打印：imdb_dict['dob']
+    # for path in imdb_dict['full_path']:
+    #     print("-" * 40+" full_path "+"-" * 40)  # 添加分隔线
+    #     print(path)      #['98/nm0000098_rm432248832_1969-2-11_2000.jpg']
+    #     temp=create_path(path)
+    #     print("-" * 40+" path "+"-" * 40)  # 添加分隔线
+    #     print(temp)     #path：data/imdb_crop/98/nm0000098_rm432248832_1969-2-11_2000.jpg
+    """
     imdb_dict['full_path'] = [create_path(path) for path in imdb_dict['full_path']]
 
     # 向字典中添加‘age’键  计算一个人的年龄
