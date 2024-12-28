@@ -5,7 +5,7 @@ import torch
 from PIL import Image
 from torch.autograd import Variable
 
-from mtcnn.box_utils import nms, _preprocess
+from box_utils import nms, _preprocess
 
 #- **作用**：检查是否有可用的 GPU（CUDA 设备）。如果有 GPU 可用（`torch.cuda.is_available()` 返回 `True`），则将 `device` 设置为 `'cuda'`（GPU 设备）；如果没有 GPU 可用，则使用 CPU (`'cpu'`)。
 #- **目的**：确保模型和数据在合适的设备上进行计算，通常为了提高性能，使用 GPU 进行深度学习任务。
